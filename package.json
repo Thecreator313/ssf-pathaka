@@ -1,0 +1,20 @@
+{
+  "name": "ssf-membership-frame-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SSF Membership Photo Frame Generator 2026 - Client side offline frame generator",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "vite": "^5.4.0"
+  },
+  "dependencies": {
+    "lucide": "^0.428.0"
+  }
+}

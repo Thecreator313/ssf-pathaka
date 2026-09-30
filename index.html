@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ml" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SSF Membership Studio 2026 | Photo Frame Generator</title>
+  <meta name="description" content="Official SSF Membership 2026 Photo Frame Generator. Create your custom membership poster frame locally and share on WhatsApp." />
+  
+  <!-- Google Fonts: Sora, Outfit, Inter & Noto Sans Malayalam -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ssfRed: {
+              DEFAULT: '#D91424',
+              dark: '#990B17',
+              light: '#EE1B2D'
+            }
+          },
+          fontFamily: {
+            sans: ['Sora', 'Outfit', 'Noto Sans Malayalam', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 min-h-screen flex flex-col justify-between pb-28 overflow-x-hidden">
+
+  <!-- TOP APP BAR -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center justify-between shadow-xs">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-700 to-red-500 flex items-center justify-center font-black text-white text-xs tracking-tighter shadow-md shadow-red-500/20">
+        SSF
+      </div>
+      <div>
+        <h1 class="text-sm font-extrabold text-slate-900 leading-tight tracking-tight uppercase">
+          SSF MEMBERSHIP 2026
+        </h1>
+        <p class="text-[11px] font-semibold text-red-600 flex items-center gap-1">
+          <span>01 — 20 ഒക്ടോബർ</span>
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Settings Gear Icon -->
+    <button id="openSettingsBtn" aria-label="Settings" class="p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all active:scale-95">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col items-center justify-center space-y-4">
+
+    <!-- FRAME CANVAS CONTAINER CARD -->
+    <div id="canvasContainer" class="relative w-full aspect-[3/4] rounded-3xl overflow-hidden card-surface border border-slate-200 shadow-xl shadow-slate-200/60 transition-all flex items-center justify-center bg-[#FAF7E6]">
+      <canvas id="frameCanvas" class="w-full h-full object-contain cursor-grab active:cursor-grabbing"></canvas>
+    </div>
+
+    <!-- MAIN ACTION BUTTONS ROW (Download HD & Share to WhatsApp) -->
+    <div class="w-full grid grid-cols-2 gap-2.5">
+      <button id="mainDownloadBtn" class="py-3.5 px-4 rounded-2xl btn-red-primary text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+        <span>Download HD</span>
+      </button>
+
+      <button id="mainShareBtn" class="py-3.5 px-4 rounded-2xl btn-whatsapp text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all">
+        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.124.553 4.197 1.604 6.014L0 24l6.126-1.606a11.974 11.974 0 005.905 1.558h.005c6.645 0 12.03-5.385 12.03-12.031C24.066 5.385 18.676 0 12.031 0zm.005 22.012h-.004a9.96 9.96 0 01-5.081-1.395l-.365-.217-3.774.99.1007-3.676-.239-.379a9.98 9.98 0 01-1.532-5.304c0-5.518 4.49-10.008 10.008-10.008 5.518 0 10.008 4.49 10.008 10.008 0 5.518-4.49 10.008-10.008 10.008z"/>
+        </svg>
+        <span>Share to WhatsApp</span>
+      </button>
+    </div>
+
+    <!-- CANVAS ACTION BUTTONS ROW (Change Photo & Reset) -->
+    <div class="w-full flex items-center justify-center gap-3">
+      <button id="uploadBtn" class="flex-1 py-3 px-4 rounded-2xl bg-white border border-slate-200 shadow-xs hover:bg-slate-50 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all">
+        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span>Change Photo</span>
+      </button>
+
+      <button id="resetTransformBtn" aria-label="Reset position" class="w-12 h-12 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center active:scale-95 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- TOUCH GESTURE INDICATOR BAR -->
+    <div class="px-4 py-2 rounded-full bg-slate-200/60 border border-slate-300/40 text-[11px] font-medium text-slate-600 flex items-center justify-center gap-2">
+      <span>👆 Drag</span>
+      <span>•</span>
+      <span>🤏 Pinch to Zoom</span>
+      <span>•</span>
+      <span>⟳ Rotate</span>
+    </div>
+
+  </main>
+
+  <!-- NATIVE MOBILE APP BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 inset-x-0 z-40 bg-[#141416]/95 backdrop-blur-xl border-t border-slate-800/80 py-2 px-3 shadow-2xl">
+    <div class="max-w-md mx-auto flex items-center justify-around gap-1">
+      
+      <!-- Photo Tab -->
+      <button data-sheet="photoSheet" class="nav-btn flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl text-white font-extrabold text-[11px] bg-red-600 shadow-md transition-all">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span>Photo</span>
+      </button>
+
+      <!-- Adjust Tab -->
+      <button data-sheet="adjustSheet" class="nav-btn flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl text-slate-400 font-semibold text-[11px] hover:text-white transition-all">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+        </svg>
+        <span>Adjust</span>
+      </button>
+
+      <!-- Filters Tab -->
+      <button data-sheet="filtersSheet" class="nav-btn flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl text-slate-400 font-semibold text-[11px] hover:text-white transition-all">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+        </svg>
+        <span>Filters</span>
+      </button>
+
+      <!-- Settings Tab -->
+      <button data-sheet="settingsSheet" class="nav-btn flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl text-slate-400 font-semibold text-[11px] hover:text-white transition-all">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+        </svg>
+        <span>Settings</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- SLIDE-UP BOTTOM SHEET: PHOTO MODAL -->
+  <div id="photoSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-white rounded-t-3xl p-6 space-y-4 shadow-2xl border-t border-slate-200">
+    <div class="w-12 h-1 bg-slate-300 rounded-full mx-auto"></div>
+    
+    <div class="flex items-center justify-between">
+      <h3 class="text-base font-extrabold text-slate-900">Upload Photo</h3>
+      <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-700 text-lg">✕</button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <button id="modalUploadBtn" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-red-500 font-bold text-slate-800 text-xs flex flex-col items-center gap-2">
+        <span class="text-2xl">🖼️</span>
+        <span>Choose from Gallery</span>
+      </button>
+
+      <button id="modalCameraBtn" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-red-500 font-bold text-slate-800 text-xs flex flex-col items-center gap-2">
+        <span class="text-2xl">📷</span>
+        <span>Take Photo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SLIDE-UP BOTTOM SHEET: ADJUST PHOTO MODAL (Compact height, internal scrolling) -->
+  <div id="adjustSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-white rounded-t-3xl p-5 shadow-2xl border-t border-slate-200 h-[48vh] max-h-[380px] flex flex-col">
+    <div class="w-12 h-1 bg-slate-300 rounded-full mx-auto shrink-0 mb-2"></div>
+    
+    <div class="flex items-center justify-between shrink-0 mb-3">
+      <h3 class="text-sm font-extrabold text-slate-900">Adjust Photo</h3>
+      <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-700 text-base">✕</button>
+    </div>
+
+    <!-- Scrollable Sliders List -->
+    <div class="flex-1 overflow-y-auto pr-1 space-y-4 text-xs pb-16">
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Exposure</span>
+          <span id="exposureVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="exposureSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Contrast</span>
+          <span id="contrastVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="contrastSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Highlights</span>
+          <span id="highlightsVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="highlightsSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Shadows</span>
+          <span id="shadowsVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="shadowsSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Whites</span>
+          <span id="whitesVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="whitesSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Blacks</span>
+          <span id="blacksVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="blacksSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Temperature</span>
+          <span id="temperatureVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="temperatureSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Tint</span>
+          <span id="tintVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="tintSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Vibrance</span>
+          <span id="vibranceVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="vibranceSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+
+      <div>
+        <label class="flex justify-between font-bold text-slate-700 mb-1">
+          <span>Saturation</span>
+          <span id="saturationVal" class="text-red-600 font-mono">0</span>
+        </label>
+        <input type="range" id="saturationSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE-UP BOTTOM SHEET: FILTERS MODAL -->
+  <div id="filtersSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-white rounded-t-3xl p-5 shadow-2xl border-t border-slate-200 h-[44vh] max-h-[340px] flex flex-col">
+    <div class="w-12 h-1 bg-slate-300 rounded-full mx-auto shrink-0 mb-2"></div>
+    
+    <div class="flex items-center justify-between shrink-0 mb-3">
+      <h3 class="text-sm font-extrabold text-slate-900">Filters</h3>
+      <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-700 text-base">✕</button>
+    </div>
+
+    <!-- Filter Cards Grid -->
+    <div id="filterCardsContainer" class="flex-1 overflow-y-auto pr-1 grid grid-cols-4 gap-3 pb-16">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+
+  <!-- SLIDE-UP BOTTOM SHEET: SETTINGS MODAL -->
+  <div id="settingsSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-white rounded-t-3xl p-5 shadow-2xl border-t border-slate-200 h-[56vh] max-h-[440px] flex flex-col">
+    <div class="w-12 h-1 bg-slate-300 rounded-full mx-auto shrink-0 mb-2"></div>
+    
+    <div class="flex items-center justify-between shrink-0 mb-3">
+      <h3 class="text-sm font-extrabold text-slate-900">Settings & Footer Position</h3>
+      <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-700 text-base">✕</button>
+    </div>
+
+    <form id="settingsForm" class="flex-1 overflow-y-auto pr-1 space-y-4 pb-16">
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1.5">Unit Name</label>
+        <input type="text" id="settingsUnitInput" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-bold text-sm focus:border-red-500 focus:outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1.5">Student Centre</label>
+        <input type="text" id="settingsCentreInput" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-bold text-sm focus:border-red-500 focus:outline-none" />
+      </div>
+
+      <!-- Footer Adjustments -->
+      <div class="pt-3 border-t border-slate-200 space-y-3">
+        <h4 class="font-extrabold text-slate-900 text-xs flex items-center justify-between">
+          <span>Footer Text Position</span>
+          <span class="text-[11px] text-slate-500 font-normal">Saves automatically</span>
+        </h4>
+
+        <div>
+          <label class="flex justify-between font-semibold text-slate-600 text-xs mb-1">
+            <span>Footer Horizontal (X Offset)</span>
+            <span id="footerXVal" class="text-red-600 font-mono">0</span>
+          </label>
+          <input type="range" id="footerXSlider" min="-400" max="400" step="2" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+        </div>
+
+        <div>
+          <label class="flex justify-between font-semibold text-slate-600 text-xs mb-1">
+            <span>Footer Vertical (Y Offset)</span>
+            <span id="footerYVal" class="text-red-600 font-mono">0</span>
+          </label>
+          <input type="range" id="footerYSlider" min="-400" max="400" step="2" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+        </div>
+
+        <div>
+          <label class="flex justify-between font-semibold text-slate-600 text-xs mb-1">
+            <span>Footer Font Scale</span>
+            <span id="footerScaleVal" class="text-red-600 font-mono">100%</span>
+          </label>
+          <input type="range" id="footerScaleSlider" min="50" max="180" step="2" value="100" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <button type="button" id="footerAlignLeftBtn" class="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-800 font-bold border border-red-500 text-xs">
+            Left
+          </button>
+          <button type="button" id="footerAlignCenterBtn" class="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-800 font-bold border border-slate-200 text-xs">
+            Center
+          </button>
+          <button type="button" id="footerAlignRightBtn" class="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-800 font-bold border border-slate-200 text-xs">
+            Right
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full py-3.5 rounded-full btn-red-primary text-white font-extrabold text-sm uppercase tracking-wider shadow-md">
+        Save Changes & Position
+      </button>
+
+      <div class="pt-2 border-t border-slate-200">
+        <button type="button" id="clearDataBtn" class="w-full py-3 px-4 rounded-2xl bg-slate-100 text-slate-700 hover:bg-red-50 hover:text-red-600 font-bold text-xs text-left flex items-center justify-between">
+          <span>Clear Saved Details</span>
+          <span>🗑️</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ONBOARDING SETUP SCREEN MODAL -->
+  <div id="setupModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="card-modal max-w-sm w-full p-6 rounded-3xl space-y-6 shadow-2xl border border-slate-100 text-center relative overflow-hidden">
+      
+      <div class="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-red-600/15 pointer-events-none"></div>
+
+      <div class="space-y-2 relative">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-red-700 to-red-500 p-0.5 shadow-lg shadow-red-600/30 flex items-center justify-center">
+          <div class="w-full h-full bg-red-600 rounded-2xl flex items-center justify-center font-black text-white text-2xl">
+            SSF
+          </div>
+        </div>
+        <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">SSF MEMBERSHIP 2026</h2>
+        <p class="text-xs text-slate-500 font-medium">Create your member frame</p>
+      </div>
+
+      <form id="setupForm" class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-800 mb-1.5">Unit Name *</label>
+          <input type="text" id="setupUnitInput" required placeholder="Enter your unit name" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-bold text-sm focus:border-red-500 focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-extrabold text-slate-800 mb-1.5">Student Centre</label>
+          <input type="text" id="setupCentreInput" placeholder="Enter student centre name" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-bold text-sm focus:border-red-500 focus:outline-none transition-all" />
+        </div>
+
+        <button type="submit" class="w-full py-4 rounded-full btn-red-primary text-white font-extrabold text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-2">
+          <span>Continue</span>
+          <span>→</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DOWNLOAD / SHARE MODAL -->
+  <div id="previewModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+    <div class="card-modal max-w-xs w-full p-5 rounded-3xl space-y-4 text-center shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-extrabold text-slate-900">Download / Share</h3>
+        <button id="closePreviewBtn" class="text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+      </div>
+
+      <div class="relative w-full aspect-[3/4] rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-100">
+        <img id="previewCanvasImg" class="w-full h-full object-contain" alt="SSF Membership Frame Preview" />
+      </div>
+
+      <div class="space-y-1 text-center">
+        <h4 class="text-sm font-extrabold text-slate-900">Your frame is ready! 🎉</h4>
+        <p class="text-xs text-slate-500">Download or share your membership frame</p>
+      </div>
+
+      <div class="space-y-2.5 pt-1">
+        <button id="modalDownloadBtn" class="w-full py-3.5 rounded-full btn-red-primary text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          <span>Download HD</span>
+        </button>
+
+        <button id="modalShareBtn" class="w-full py-3.5 rounded-full btn-whatsapp text-white font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md">
+          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.124.553 4.197 1.604 6.014L0 24l6.126-1.606a11.974 11.974 0 005.905 1.558h.005c6.645 0 12.03-5.385 12.03-12.031C24.066 5.385 18.676 0 12.031 0zm.005 22.012h-.004a9.96 9.96 0 01-5.081-1.395l-.365-.217-3.774.99.1007-3.676-.239-.379a9.98 9.98 0 01-1.532-5.304c0-5.518 4.49-10.008 10.008-10.008 5.518 0 10.008 4.49 10.008 10.008 0 5.518-4.49 10.008-10.008 10.008z"/>
+          </svg>
+          <span>Share to WhatsApp</span>
+        </button>
+
+        <button id="modalCopyCaptionBtn" class="w-full py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-center gap-2">
+          <span>📋 Copy "I'M IN" Caption</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIDDEN INPUTS -->
+  <input type="file" id="photoFileInput" accept="image/*" class="hidden" />
+  <input type="file" id="cameraFileInput" accept="image/*" capture="environment" class="hidden" />
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-slate-900 text-white font-bold text-xs tracking-wide shadow-2xl transition-all duration-300 -translate-y-20 opacity-0 pointer-events-none">
+    Notification
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

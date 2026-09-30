@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  --ssf-red-primary: #D91424;
+  --ssf-red-dark: #990B17;
+  --ssf-red-hover: #EE1B2D;
+  --ssf-bg-light: #F8FAFC;
+  --ssf-surface-white: #FFFFFF;
+  --ssf-text-main: #0F172A;
+  --ssf-text-muted: #64748B;
+  --ssf-green-whatsapp: #10B981;
+}
+
+body {
+  background-color: var(--ssf-bg-light);
+  color: var(--ssf-text-main);
+  font-family: 'Sora', 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Glassmorphism & Soft Card Elevation */
+.card-surface {
+  background: #FFFFFF;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.card-modal {
+  background: #FFFFFF;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(241, 245, 249, 1);
+}
+
+.bottom-sheet {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Primary Crimson Red Button */
+.btn-red-primary {
+  background: linear-gradient(135deg, #E11D48 0%, #D91424 50%, #B91C1C 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 6px 20px -2px rgba(217, 20, 36, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-red-primary:hover {
+  background: linear-gradient(135deg, #F43F5E 0%, #E11D48 50%, #BE123C 100%);
+  box-shadow: 0 8px 24px -2px rgba(217, 20, 36, 0.45);
+}
+
+.btn-red-primary:active {
+  transform: scale(0.97);
+}
+
+/* WhatsApp Green Button */
+.btn-whatsapp {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 6px 20px -2px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-whatsapp:hover {
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+}
+
+.btn-whatsapp:active {
+  transform: scale(0.97);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.8);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 1);
+}
+
+/* Touch Action for Canvas */
+canvas#frameCanvas {
+  touch-action: none;
+}
+
+/* Custom Slider Accent Color */
+input[type=range] {
+  accent-color: #D91424;
+}
