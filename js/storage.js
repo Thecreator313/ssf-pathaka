@@ -20,7 +20,7 @@ export const Storage = {
   getConfig() {
     return {
       unitName: localStorage.getItem(STORAGE_KEYS.UNIT_NAME) || 'Malappuram East',
-      studentCentre: localStorage.getItem(STORAGE_KEYS.STUDENT_CENTRE) || 'District Committee, Students Centre, Manjeri',
+      studentCentre: localStorage.getItem(STORAGE_KEYS.STUDENT_CENTRE) || 'Unit Committee, Students Centre,',
       footerX: parseInt(localStorage.getItem(STORAGE_KEYS.FOOTER_X) || '0', 10),
       footerY: parseInt(localStorage.getItem(STORAGE_KEYS.FOOTER_Y) || '0', 10),
       footerScale: parseFloat(localStorage.getItem(STORAGE_KEYS.FOOTER_SCALE) || '1.0'),

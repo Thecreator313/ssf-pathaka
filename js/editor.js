@@ -1,7 +1,14 @@
 /**
  * SSF Membership Studio - Core Interactive Canvas Editor Engine
- * Updated with official SSF 2026 Frame PNG & Dynamic Footer Styling
- * (Line 1: SSF [Cooper Black] + Unit Name [Sora Regular], Line 2: Student Centre [Sora Light])
+ * Non-destructive pixel processing with Adobe Camera Raw-inspired controls:
+ * LIGHT: Exposure, Contrast, Highlights, Shadows, Whites, Blacks
+ * COLOR: Temperature, Tint, Vibrance, Saturation
+ *
+ * Layer Order:
+ * 1. Base Canvas Background (#FAF7E6)
+ * 2. User Photo (Canvas pixel processed, transforms applied, clipped to stamp slot)
+ * 3. Official Frame PNG Overlay
+ * 4. Dynamic SSF Footer (Cooper Black + Sora)
  */
 
 import { ImageProcessor } from './filters.js';
@@ -18,8 +25,14 @@ export class CanvasEditor {
     // Viewport scale factor
     this.viewportScale = 1;
 
-    // Photo object & transform state
-    this.photo = null;
+    // Original untouched uploaded photo & adjusted offscreen canvas
+    this.originalPhoto = null;
+    this.photo = null; // Alias for backward compatibility
+    this.adjustedPhotoCanvas = null;
+    this.isShowingBefore = false;
+    this.pendingAdjustRaf = null;
+
+    // Photo transform state
     this.photoState = {
       x: 0,
       y: 0,
@@ -37,7 +50,7 @@ export class CanvasEditor {
       align: options.footerAlign || 'left'
     };
 
-    // Image adjustment values (10 parameters)
+    // 10 Camera Raw-inspired adjustments
     this.adjustments = {
       exposure: 0,
       contrast: 0,
@@ -56,7 +69,7 @@ export class CanvasEditor {
     // Unit configuration details
     this.config = {
       unitName: 'Malappuram East',
-      studentCentre: 'District Committee, Students Centre, Manjeri',
+      studentCentre: 'Unit Committee, Students Centre,',
       frameStyle: 'official'
     };
 
@@ -90,7 +103,7 @@ export class CanvasEditor {
   }
 
   /**
-   * Load Default Official SSF Frame PNG
+   * Load Default Official SSF Frame PNG (from public /assets/)
    */
   loadDefaultFrame() {
     const img = new Image();
@@ -101,11 +114,11 @@ export class CanvasEditor {
       this.render();
     };
     img.onerror = () => {
-      console.warn('Could not load assets/frame.png, falling back to backup renderer');
+      console.warn('Could not load /assets/frame.png, falling back to backup renderer');
       this.isFrameLoaded = false;
       this.render();
     };
-    img.src = './assets/frame.png';
+    img.src = '/assets/frame.png';
   }
 
   /**
@@ -130,32 +143,15 @@ export class CanvasEditor {
   }
 
   /**
-   * Load custom frame PNG image
-   */
-  loadCustomFrame(imageSource) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        this.frameImage = img;
-        this.isFrameLoaded = true;
-        this.config.frameStyle = 'custom';
-        this.render();
-        resolve();
-      };
-      img.onerror = reject;
-      img.src = imageSource;
-    });
-  }
-
-  /**
-   * Load User Photo into canvas editor
+   * Load User Photo into canvas editor (saves pristine original)
    */
   loadPhoto(imageSource) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
+        this.originalPhoto = img;
         this.photo = img;
+        this.processAdjustmentsSync(false);
         this.autoFitPhoto();
         this.render();
         resolve();
@@ -170,16 +166,61 @@ export class CanvasEditor {
   }
 
   /**
+   * Process adjustments non-destructively onto offscreen canvas
+   */
+  processAdjustmentsSync(isInteractive = false) {
+    if (!this.originalPhoto) return;
+
+    if (!ImageProcessor.hasActiveAdjustments(this.adjustments)) {
+      this.adjustedPhotoCanvas = null;
+      return;
+    }
+
+    // Interactive slider dragging uses 1200px limit for 60fps mobile responsiveness
+    const maxDim = isInteractive ? 1200 : 1600;
+    this.adjustedPhotoCanvas = ImageProcessor.process(
+      this.originalPhoto,
+      this.adjustments,
+      this.adjustedPhotoCanvas,
+      maxDim
+    );
+  }
+
+  /**
+   * Schedule adjustment processing using requestAnimationFrame (smooth 60fps)
+   */
+  scheduleAdjustmentsProcessing(isInteractive = true) {
+    if (this.pendingAdjustRaf) {
+      cancelAnimationFrame(this.pendingAdjustRaf);
+    }
+
+    this.pendingAdjustRaf = requestAnimationFrame(() => {
+      this.processAdjustmentsSync(isInteractive);
+      this.render();
+      this.pendingAdjustRaf = null;
+    });
+  }
+
+  /**
+   * Toggle Before/After view (temporarily show original untouched photo)
+   */
+  setShowingBefore(show) {
+    this.isShowingBefore = Boolean(show);
+    this.render();
+  }
+
+  /**
    * Automatically calculate scale & center position to cover the stamp slot seamlessly
    */
   autoFitPhoto() {
-    if (!this.photo) return;
+    const refPhoto = this.originalPhoto || this.photo;
+    if (!refPhoto) return;
 
     const slotPixelWidth = this.exportWidth * this.photoSlot.width;
     const slotPixelHeight = this.exportHeight * this.photoSlot.height;
 
-    const scaleX = slotPixelWidth / this.photo.width;
-    const scaleY = slotPixelHeight / this.photo.height;
+    const scaleX = slotPixelWidth / refPhoto.width;
+    const scaleY = slotPixelHeight / refPhoto.height;
 
     const autoScale = Math.max(scaleX, scaleY);
 
@@ -199,8 +240,13 @@ export class CanvasEditor {
    * Reset Photo position & adjustments
    */
   resetAll() {
-    this.adjustments = { exposure: 0, contrast: 0, highlights: 0, shadows: 0, whites: 0, blacks: 0, temperature: 0, tint: 0, vibrance: 0, saturation: 0 };
+    this.adjustments = {
+      exposure: 0, contrast: 0, highlights: 0, shadows: 0,
+      whites: 0, blacks: 0, temperature: 0, tint: 0, vibrance: 0, saturation: 0
+    };
     this.activeFilterId = 'original';
+    this.adjustedPhotoCanvas = null;
+    this.isShowingBefore = false;
     this.autoFitPhoto();
     this.render();
   }
@@ -208,9 +254,9 @@ export class CanvasEditor {
   /**
    * Update photo adjustments
    */
-  setAdjustments(adj) {
+  setAdjustments(adj, isInteractive = false) {
     this.adjustments = { ...this.adjustments, ...adj };
-    this.render();
+    this.scheduleAdjustmentsProcessing(isInteractive);
   }
 
   /**
@@ -236,7 +282,7 @@ export class CanvasEditor {
       this.canvas.height = height;
     }
 
-    // 1. Clear background (Cream background matching official poster frame)
+    // 1. Clear background (Warm cream matching official SSF poster)
     this.ctx.clearRect(0, 0, width, height);
     this.ctx.fillStyle = '#FAF7E6';
     this.ctx.fillRect(0, 0, width, height);
@@ -247,11 +293,11 @@ export class CanvasEditor {
     const slotW = this.photoSlot.width * width;
     const slotH = this.photoSlot.height * height;
 
-    // 2. Render User Photo
-    if (this.photo) {
+    // 2. Render User Photo (UNDERNEATH frame, non-destructive canvas pixel processing)
+    if (this.originalPhoto) {
       this.ctx.save();
 
-      // Clip photo to stamp slot area
+      // Clip strictly to stamp slot area
       this.ctx.beginPath();
       this.ctx.rect(
         this.photoSlot.x * width,
@@ -266,41 +312,38 @@ export class CanvasEditor {
 
       this.ctx.translate(finalX, finalY);
       this.ctx.rotate((this.photoState.rotation * Math.PI) / 180);
+
+      // Choose whether to render untouched original or adjusted canvas
+      const photoToDraw = (!this.isShowingBefore && this.adjustedPhotoCanvas)
+        ? this.adjustedPhotoCanvas
+        : this.originalPhoto;
+
+      // Compensate scale if working preview canvas has different resolution than original
+      const scaleComp = this.originalPhoto.width / photoToDraw.width;
+      const finalScale = this.photoState.scale * scaleComp;
+
       this.ctx.scale(
-        this.photoState.scale * (this.photoState.flipH ? -1 : 1),
-        this.photoState.scale * (this.photoState.flipV ? -1 : 1)
+        finalScale * (this.photoState.flipH ? -1 : 1),
+        finalScale * (this.photoState.flipV ? -1 : 1)
       );
 
-      // Apply Filter adjustments
-      const filterStr = ImageProcessor.getCssFilterString(this.adjustments);
-      this.ctx.filter = filterStr;
+      const drawX = -photoToDraw.width / 2;
+      const drawY = -photoToDraw.height / 2;
+      this.ctx.drawImage(photoToDraw, drawX, drawY);
 
-      const drawX = -this.photo.width / 2;
-      const drawY = -this.photo.height / 2;
-      this.ctx.drawImage(this.photo, drawX, drawY);
-
-      this.ctx.filter = 'none';
-      this.ctx.restore();
-
-      // Soft adjustments pass
-      this.ctx.save();
-      this.ctx.beginPath();
-      this.ctx.rect(this.photoSlot.x * width, this.photoSlot.y * height, slotW, slotH);
-      this.ctx.clip();
-      ImageProcessor.applyCanvasAdjustments(this.ctx, width, height, this.adjustments);
       this.ctx.restore();
 
     } else {
       this.renderEmptyPhotoSlot(slotCenterX, slotCenterY, slotW, slotH);
     }
 
-    // 3. Render SSF Frame Overlay Layer (Official Frame PNG on top)
+    // 3. Render SSF Frame Overlay Layer (Official Frame PNG OVER the photo)
     if (this.isFrameLoaded && this.frameImage) {
       this.ctx.drawImage(this.frameImage, 0, 0, width, height);
     }
 
-    // 4. Render Dynamic Footer Text Layer (No background box! Clean text overlay)
-    this.renderDynamicFooter(width, height);
+    // 4. Render Dynamic SSF Footer Text (Cooper Black + Sora fonts, NO background box)
+    this.renderDynamicFooter(this.ctx, width, height, 1.0);
   }
 
   /**
@@ -335,81 +378,68 @@ export class CanvasEditor {
   }
 
   /**
-   * Render Dynamic Footer Text (Clean text with exact Cooper Black + Sora fonts, NO background box)
+   * Render Dynamic Footer Text
+   * LINE 1: "SSF " (Cooper Black) + Unit Name (Sora Regular / SemiBold)
+   * LINE 2: Student Centre Name (Sora Light)
    */
-  renderDynamicFooter(width, height) {
-    this.ctx.save();
+  renderDynamicFooter(targetCtx = this.ctx, width = this.exportWidth, height = this.exportHeight, scaleMultiplier = 1.0) {
+    targetCtx.save();
 
-    // Default Position (Bottom-Left matching reference image: ~13% left, ~86.5% top)
+    // Default Position (Bottom-Left: ~13% left, ~86.5% top)
     const baseLeft = width * 0.13;
     const baseTop = height * 0.865;
 
     // Apply user sliders: X offset, Y offset, Scale
-    const posX = baseLeft + (this.footerState.x || 0);
-    const posY = baseTop + (this.footerState.y || 0);
-    const scale = this.footerState.scale || 1.0;
+    const posX = baseLeft + (this.footerState.x || 0) * scaleMultiplier;
+    const posY = baseTop + (this.footerState.y || 0) * scaleMultiplier;
+    const userScale = (this.footerState.scale || 1.0) * scaleMultiplier;
 
-    this.ctx.translate(posX, posY);
-    this.ctx.scale(scale, scale);
+    targetCtx.translate(posX, posY);
+    targetCtx.scale(userScale, userScale);
 
     const align = this.footerState.align || 'left';
-    this.ctx.textAlign = align;
+    targetCtx.textAlign = align;
+    targetCtx.textBaseline = 'alphabetic';
 
     // Text Values
     const unitText = (this.config.unitName || 'Malappuram East').trim();
-    const centreText = (this.config.studentCentre || 'District Committee, Students Centre, Manjeri').trim();
+    const centreText = (this.config.studentCentre || 'Unit Committee, Students Centre,').trim();
 
     // Font Sizes (Scalable HD resolution base)
     const ssfFontSize = 48;
     const unitFontSize = 44;
     const centreFontSize = 32;
+    const fontColor = '#111827'; // Dark Charcoal
 
-    const fontColor = '#111827'; // Dark Charcoal / Black matching reference
-
-    // ----------------------------------------------------
-    // LINE 1: "SSF " (Cooper Black) + Unit Name (Sora Regular / SemiBold)
-    // ----------------------------------------------------
-    this.ctx.textBaseline = 'alphabetic';
-
-    // 1A. Draw "SSF" in Cooper Black / heavy bold
-    const ssfFontStr = `900 ${ssfFontSize}px "Cooper Black", "COOPBL", "Outfit", sans-serif`;
-    this.ctx.font = ssfFontStr;
-    this.ctx.fillStyle = fontColor;
+    // LINE 1: "SSF " (Cooper Black) + Unit Name (Sora)
+    const ssfFontStr = `900 ${ssfFontSize}px 'CooperBlack', 'Cooper Black', 'COOPBL', fantasy, sans-serif`;
+    targetCtx.font = ssfFontStr;
+    targetCtx.fillStyle = fontColor;
 
     let currentX = 0;
-    if (align === 'center') {
-      currentX = 0; // For center alignment, calculate total width
-    } else if (align === 'right') {
-      currentX = 0;
-    }
-
     if (align === 'left') {
-      this.ctx.fillText('SSF ', currentX, 0);
-      const ssfMetrics = this.ctx.measureText('SSF ');
+      targetCtx.fillText('SSF ', currentX, 0);
+      const ssfMetrics = targetCtx.measureText('SSF ');
       currentX += ssfMetrics.width;
 
-      // 1B. Draw Unit Name right after "SSF " in Sora Regular / SemiBold
-      this.ctx.font = `600 ${unitFontSize}px "Sora", "Noto Sans Malayalam", sans-serif`;
-      this.ctx.fillStyle = fontColor;
-      this.ctx.fillText(unitText, currentX, 0);
+      targetCtx.font = `600 ${unitFontSize}px 'Sora', 'Noto Sans Malayalam', sans-serif`;
+      targetCtx.fillStyle = fontColor;
+      targetCtx.fillText(unitText, currentX, 0);
 
     } else {
-      // For centered or right alignment
-      this.ctx.font = `600 ${unitFontSize}px "Sora", "Noto Sans Malayalam", sans-serif`;
-      this.ctx.fillStyle = fontColor;
-      this.ctx.fillText(`SSF ${unitText}`, 0, 0);
+      // Centered or Right
+      targetCtx.font = `600 ${unitFontSize}px 'Sora', 'Noto Sans Malayalam', sans-serif`;
+      targetCtx.fillStyle = fontColor;
+      targetCtx.fillText(`SSF ${unitText}`, 0, 0);
     }
 
-    // ----------------------------------------------------
     // LINE 2: Student Centre Name (Sora Light)
-    // ----------------------------------------------------
-    const line2Y = 46; // Spacing below Line 1
-    this.ctx.font = `300 ${centreFontSize}px "Sora", "Noto Sans Malayalam", sans-serif`;
-    this.ctx.fillStyle = '#374151'; // Dark Slate / Charcoal for Light text
+    const line2Y = 46;
+    targetCtx.font = `300 ${centreFontSize}px 'Sora', 'Noto Sans Malayalam', sans-serif`;
+    targetCtx.fillStyle = '#374151';
+    targetCtx.fillText(centreText, 0, line2Y);
 
-    this.ctx.fillText(centreText, 0, line2Y);
-
-    this.ctx.restore();
+    targetCtx.restore();
   }
 
   /**
@@ -428,7 +458,7 @@ export class CanvasEditor {
 
     // Touch Start
     this.canvas.addEventListener('touchstart', (e) => {
-      if (!this.photo) return;
+      if (!this.originalPhoto) return;
       e.preventDefault();
 
       if (e.touches.length === 1) {
@@ -453,7 +483,7 @@ export class CanvasEditor {
 
     // Touch Move
     this.canvas.addEventListener('touchmove', (e) => {
-      if (!this.photo) return;
+      if (!this.originalPhoto) return;
       e.preventDefault();
 
       if (e.touches.length === 1 && this.isDragging) {
@@ -503,7 +533,7 @@ export class CanvasEditor {
 
     // Mouse Dragging for Desktop
     this.canvas.addEventListener('mousedown', (e) => {
-      if (!this.photo) return;
+      if (!this.originalPhoto) return;
       this.isDragging = true;
       const pos = getPointerPos(e);
       this.dragStart = pos;
@@ -511,7 +541,7 @@ export class CanvasEditor {
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (!this.isDragging || !this.photo) return;
+      if (!this.isDragging || !this.originalPhoto) return;
       const pos = getPointerPos(e);
       const deltaX = pos.x - this.dragStart.x;
       const deltaY = pos.y - this.dragStart.y;
@@ -529,7 +559,7 @@ export class CanvasEditor {
 
     // Mouse Wheel Zoom
     this.canvas.addEventListener('wheel', (e) => {
-      if (!this.photo) return;
+      if (!this.originalPhoto) return;
       e.preventDefault();
       const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
       this.photoState.scale = Math.max(0.1, Math.min(5, this.photoState.scale * zoomFactor));
@@ -539,36 +569,67 @@ export class CanvasEditor {
   }
 
   /**
-   * Export Full High Resolution HD Data URL or Canvas Blob
+   * Export Full High-Resolution HD Composited Image:
+   * 1. adjusted user photo (non-destructive, native pixel processed)
+   * 2. frame.png overlay
+   * 3. dynamic SSF footer
+   * Exact layer order with 100% fidelity to preview!
    */
-  exportHDCanvas(scaleFactor = 1.5) {
+  exportHDCanvas(scaleFactor = 1.0) {
     const exportCanvas = document.createElement('canvas');
     exportCanvas.width = this.exportWidth * scaleFactor;
     exportCanvas.height = this.exportHeight * scaleFactor;
 
-    const hdEditor = new CanvasEditor(exportCanvas, {
-      exportWidth: exportCanvas.width,
-      exportHeight: exportCanvas.height
-    });
+    const ctx = exportCanvas.getContext('2d');
+    const width = exportCanvas.width;
+    const height = exportCanvas.height;
 
-    hdEditor.config = { ...this.config };
-    hdEditor.photo = this.photo;
-    hdEditor.frameImage = this.frameImage;
-    hdEditor.isFrameLoaded = this.isFrameLoaded;
-    hdEditor.adjustments = { ...this.adjustments };
-    hdEditor.activeFilterId = this.activeFilterId;
-    hdEditor.footerState = { ...this.footerState };
+    // 1. Cream background (#FAF7E6)
+    ctx.fillStyle = '#FAF7E6';
+    ctx.fillRect(0, 0, width, height);
 
-    hdEditor.photoState = {
-      x: this.photoState.x * scaleFactor,
-      y: this.photoState.y * scaleFactor,
-      scale: this.photoState.scale * scaleFactor,
-      rotation: this.photoState.rotation,
-      flipH: this.photoState.flipH,
-      flipV: this.photoState.flipV
-    };
+    // 2. Render Full Native HD Adjusted Photo
+    if (this.originalPhoto) {
+      ctx.save();
+      const slotCenterX = (this.photoSlot.x + this.photoSlot.width / 2) * width;
+      const slotCenterY = (this.photoSlot.y + this.photoSlot.height / 2) * height;
+      const slotW = this.photoSlot.width * width;
+      const slotH = this.photoSlot.height * height;
 
-    hdEditor.render();
+      ctx.beginPath();
+      ctx.rect(this.photoSlot.x * width, this.photoSlot.y * height, slotW, slotH);
+      ctx.clip();
+
+      const finalX = slotCenterX + (this.photoState.x * scaleFactor);
+      const finalY = slotCenterY + (this.photoState.y * scaleFactor);
+      ctx.translate(finalX, finalY);
+      ctx.rotate((this.photoState.rotation * Math.PI) / 180);
+
+      // Process at full native resolution (0 = unlimited dimension)
+      let hdAdjusted = this.originalPhoto;
+      if (ImageProcessor.hasActiveAdjustments(this.adjustments)) {
+        hdAdjusted = ImageProcessor.process(this.originalPhoto, this.adjustments, null, 0);
+      }
+
+      const scaleComp = this.originalPhoto.width / hdAdjusted.width;
+      const finalScale = this.photoState.scale * scaleFactor * scaleComp;
+
+      ctx.scale(
+        finalScale * (this.photoState.flipH ? -1 : 1),
+        finalScale * (this.photoState.flipV ? -1 : 1)
+      );
+
+      ctx.drawImage(hdAdjusted, -hdAdjusted.width / 2, -hdAdjusted.height / 2);
+      ctx.restore();
+    }
+
+    // 3. Render SSF Frame Overlay Layer
+    if (this.isFrameLoaded && this.frameImage) {
+      ctx.drawImage(this.frameImage, 0, 0, width, height);
+    }
+
+    // 4. Render Dynamic SSF Footer
+    this.renderDynamicFooter(ctx, width, height, scaleFactor);
 
     return exportCanvas;
   }

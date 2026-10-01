@@ -1,5 +1,9 @@
 /**
  * SSF Membership Studio - Main Application Controller (Mobile App UI)
+ * Fully interactive with Adobe Camera Raw-inspired adjustment panel:
+ * LIGHT: Exposure, Contrast, Highlights, Shadows, Whites, Blacks
+ * COLOR: Temperature, Tint, Vibrance, Saturation
+ * Real-time canvas processing, Compare Before/After, Reset All, and Individual Resets
  */
 
 import { Storage } from './storage.js';
@@ -42,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const resetTransformBtn = document.getElementById('resetTransformBtn');
 
-  // 10 Photo Adjustment Sliders
+  // 10 Camera Raw Adjustment Sliders
   const sliderIds = [
     'exposure', 'contrast', 'highlights', 'shadows', 
     'whites', 'blacks', 'temperature', 'tint', 'vibrance', 'saturation'
@@ -54,6 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
     sliders[id] = document.getElementById(`${id}Slider`);
     valDisplays[id] = document.getElementById(`${id}Val`);
   });
+
+  // Adjust Sheet Action Buttons
+  const resetAdjustmentsBtn = document.getElementById('resetAdjustmentsBtn');
+  const compareBtn = document.getElementById('compareBtn');
+  const compareBtnText = document.getElementById('compareBtnText');
+  const adjustDoneBtn = document.getElementById('adjustDoneBtn');
+  const sliderResetBtns = document.querySelectorAll('.slider-reset-btn');
 
   // Footer Sliders in Settings Sheet
   const footerXSlider = document.getElementById('footerXSlider');
@@ -91,6 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Apply configuration to editor
   editor.setConfig(config);
 
+  // Ensure canvas re-renders once custom fonts (CooperBlack, Sora) are fully loaded by browser
+  if (document.fonts) {
+    document.fonts.ready.then(() => {
+      editor.render();
+    });
+  }
+
   // Sync Footer sliders with current state
   function syncFooterSliderValues() {
     if (footerXSlider) footerXSlider.value = editor.footerState.x;
@@ -113,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showSetupModal() {
     setupUnitInput.value = config.unitName || '';
-    setupCentreInput.value = config.studentCentre || '';
+    setupCentreInput.value = config.studentCentre || 'Unit Committee, Students Centre,';
     setupModal.classList.remove('hidden');
     setupModal.classList.add('flex');
   }
@@ -133,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Storage.saveConfig(unit, centre || 'District Committee, Students Centre, Manjeri', editor.footerState);
+    Storage.saveConfig(unit, centre || 'Unit Committee, Students Centre,', editor.footerState);
     config = Storage.getConfig();
     editor.setConfig(config);
     hideSetupModal();
@@ -181,6 +199,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', closeAllSheets);
   });
 
+  if (adjustDoneBtn) {
+    adjustDoneBtn.addEventListener('click', closeAllSheets);
+  }
+
   if (openSettingsBtn) {
     openSettingsBtn.addEventListener('click', () => {
       settingsUnitInput.value = config.unitName;
@@ -222,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!file) return;
     showToast('Loading photo...');
     editor.loadPhoto(file).then(() => {
-      showToast('Photo added! Tap Adjust or Filters to style.');
+      showToast('Photo added! Tap Adjust to fine-tune.');
       closeAllSheets();
     }).catch(err => {
       console.error(err);
@@ -242,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.files && e.target.files[0]) handlePhotoUpload(e.target.files[0]);
   });
 
-  // 4. Photo Reset
+  // 4. Photo Transform Reset
   if (resetTransformBtn) {
     resetTransformBtn.addEventListener('click', () => {
       editor.autoFitPhoto();
@@ -251,24 +273,132 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 5. 10 Photo Adjustment Sliders Event Listener
-  function updateAdjustmentsFromSliders() {
+  // 5. Adobe Camera Raw-style Precision Photo Adjustments
+  function formatValueDisplay(id, val) {
+    const displayEl = valDisplays[id];
+    if (!displayEl) return;
+
+    if (val > 0) {
+      displayEl.textContent = `+${val}`;
+      displayEl.className = 'font-mono font-bold text-red-600 text-xs w-10 text-right';
+    } else if (val < 0) {
+      displayEl.textContent = `${val}`;
+      displayEl.className = 'font-mono font-bold text-red-600 text-xs w-10 text-right';
+    } else {
+      displayEl.textContent = '0';
+      displayEl.className = 'font-mono font-bold text-slate-600 text-xs w-10 text-right';
+    }
+
+    // Toggle individual reset button
+    const resetBtn = document.querySelector(`[data-reset="${id}"]`);
+    if (resetBtn) {
+      if (val !== 0) {
+        resetBtn.classList.remove('opacity-0', 'pointer-events-none');
+        resetBtn.classList.add('opacity-100', 'pointer-events-auto');
+      } else {
+        resetBtn.classList.add('opacity-0', 'pointer-events-none');
+        resetBtn.classList.remove('opacity-100', 'pointer-events-auto');
+      }
+    }
+  }
+
+  function updateAdjustmentsFromSliders(isInteractive = true) {
     const adj = {};
     sliderIds.forEach(id => {
       if (sliders[id]) {
         const val = parseInt(sliders[id].value, 10);
         adj[id] = val;
-        if (valDisplays[id]) valDisplays[id].textContent = val;
+        formatValueDisplay(id, val);
       }
     });
-    editor.setAdjustments(adj);
+    editor.setAdjustments(adj, isInteractive);
   }
 
+  // Bind live slider events
   sliderIds.forEach(id => {
-    if (sliders[id]) {
-      sliders[id].addEventListener('input', updateAdjustmentsFromSliders);
+    const slider = sliders[id];
+    if (slider) {
+      // Real-time responsive slider dragging
+      slider.addEventListener('input', () => {
+        updateAdjustmentsFromSliders(true);
+      });
+
+      // High-quality pass on slider release
+      slider.addEventListener('change', () => {
+        updateAdjustmentsFromSliders(false);
+      });
+
+      // Double-click to reset single slider
+      slider.addEventListener('dblclick', () => {
+        slider.value = 0;
+        updateAdjustmentsFromSliders(false);
+      });
     }
   });
+
+  // Individual slider reset buttons
+  sliderResetBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.reset;
+      if (sliders[id]) {
+        sliders[id].value = 0;
+        updateAdjustmentsFromSliders(false);
+      }
+    });
+  });
+
+  // Reset All Button
+  if (resetAdjustmentsBtn) {
+    resetAdjustmentsBtn.addEventListener('click', () => {
+      sliderIds.forEach(id => {
+        if (sliders[id]) sliders[id].value = 0;
+        formatValueDisplay(id, 0);
+      });
+      editor.setAdjustments({
+        exposure: 0, contrast: 0, highlights: 0, shadows: 0,
+        whites: 0, blacks: 0, temperature: 0, tint: 0, vibrance: 0, saturation: 0
+      }, false);
+      renderPresetFilterCards();
+      showToast('All adjustments reset to default');
+    });
+  }
+
+  // Before / After Compare Toggle & Hold
+  let isComparing = false;
+
+  function startCompare() {
+    isComparing = true;
+    editor.setShowingBefore(true);
+    if (compareBtn) {
+      compareBtn.classList.add('bg-red-600', 'text-white', 'border-red-600');
+      compareBtn.classList.remove('bg-stone-200/70', 'text-slate-800');
+    }
+    if (compareBtnText) compareBtnText.textContent = 'Original';
+  }
+
+  function stopCompare() {
+    if (!isComparing) return;
+    isComparing = false;
+    editor.setShowingBefore(false);
+    if (compareBtn) {
+      compareBtn.classList.remove('bg-red-600', 'text-white', 'border-red-600');
+      compareBtn.classList.add('bg-stone-200/70', 'text-slate-800');
+    }
+    if (compareBtnText) compareBtnText.textContent = 'Compare';
+  }
+
+  if (compareBtn) {
+    // Hold to compare on Desktop & Mobile
+    compareBtn.addEventListener('mousedown', startCompare);
+    window.addEventListener('mouseup', stopCompare);
+    compareBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      startCompare();
+    }, { passive: false });
+    window.addEventListener('touchend', stopCompare);
+    window.addEventListener('touchcancel', stopCompare);
+  }
 
   // Footer Sliders in Settings Sheet
   if (footerXSlider) {
@@ -322,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 6. Filter Preset Cards
+  // 6. Filter Preset Cards Integration
   function renderPresetFilterCards() {
     if (!filterCardsContainer) return;
     filterCardsContainer.innerHTML = '';
@@ -342,15 +472,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       card.addEventListener('click', () => {
         editor.activeFilterId = preset.id;
+        const adj = preset.adjustments;
         sliderIds.forEach(id => {
           if (sliders[id]) {
-            const val = preset.adjustments[id] || 0;
-            sliders[id].value = val;
-            if (valDisplays[id]) valDisplays[id].textContent = val;
+            sliders[id].value = adj[id] || 0;
+            formatValueDisplay(id, adj[id] || 0);
           }
         });
-
-        updateAdjustmentsFromSliders();
+        editor.setAdjustments(adj, false);
         renderPresetFilterCards();
       });
 
@@ -360,19 +489,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderPresetFilterCards();
 
-  // 7. Download & Share Logic
+  // 7. Download & WhatsApp Share Logic
   function executeDownload() {
     showToast('Exporting HD PNG Image...');
-    const hdCanvas = editor.exportHDCanvas(2);
+    const hdCanvas = editor.exportHDCanvas(1.0);
     Exporter.downloadHD(hdCanvas, config.unitName);
     showToast('✅ Download Started!');
   }
 
   async function executeWhatsAppShare() {
     showToast('Preparing WhatsApp Share...');
-    const hdCanvas = editor.exportHDCanvas(2);
+    const hdCanvas = editor.exportHDCanvas(1.0);
     const result = await Exporter.shareToWhatsApp(hdCanvas, config);
-    if (result.success) {
+    if (result && result.success) {
       showToast('🚀 Ready to share on WhatsApp!');
     }
   }
@@ -386,7 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openPreviewModal() {
     showToast('Generating HD Frame Preview...');
-    const hdCanvas = editor.exportHDCanvas(2);
+    const hdCanvas = editor.exportHDCanvas(1.0);
     previewCanvasImg.src = hdCanvas.toDataURL('image/png');
     previewModal.classList.remove('hidden');
     previewModal.classList.add('flex');
@@ -416,5 +545,18 @@ document.addEventListener('DOMContentLoaded', () => {
       toast.classList.remove('translate-y-0', 'opacity-100');
       toast.classList.add('-translate-y-20', 'opacity-0');
     }, 3000);
+  }
+
+  // 9. Register PWA Service Worker
+  if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => {
+          console.log('SSF Photo Frame PWA registered:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('PWA service worker registration failed:', err);
+        });
+    });
   }
 });

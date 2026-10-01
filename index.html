@@ -3,9 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>SSF Membership Studio 2026 | Photo Frame Generator</title>
+  <title>SSF Photo Frame | Membership Studio 2026</title>
   <meta name="description" content="Official SSF Membership 2026 Photo Frame Generator. Create your custom membership poster frame locally and share on WhatsApp." />
   
+  <!-- PWA Meta Tags & Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#D91424" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SSF Photo Frame" />
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  
+  <!-- Preload Critical Frame & Font Assets for Vercel/Production -->
+  <link rel="preload" href="/assets/fonts/COOPBL.TTF" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="/assets/frame.png" as="image" />
+
   <!-- Google Fonts: Sora, Outfit, Inter & Noto Sans Malayalam -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,7 +54,7 @@
   <!-- TOP APP BAR -->
   <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center justify-between shadow-xs">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-700 to-red-500 flex items-center justify-center font-black text-white text-xs tracking-tighter shadow-md shadow-red-500/20">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-700 to-red-500 flex items-center justify-center font-black text-white text-xs tracking-tighter shadow-md shadow-red-500/20" style="font-family:'CooperBlack','Cooper Black',fantasy;">
         SSF
       </div>
       <div>
@@ -176,96 +190,183 @@
     </div>
   </div>
 
-  <!-- SLIDE-UP BOTTOM SHEET: ADJUST PHOTO MODAL (Compact height, internal scrolling) -->
-  <div id="adjustSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-white rounded-t-3xl p-5 shadow-2xl border-t border-slate-200 h-[48vh] max-h-[380px] flex flex-col">
-    <div class="w-12 h-1 bg-slate-300 rounded-full mx-auto shrink-0 mb-2"></div>
+  <!-- SLIDE-UP BOTTOM SHEET: PROFESSIONAL ACR ADJUST PHOTO MODAL -->
+  <div id="adjustSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-[#FAF8F5] rounded-t-3xl p-5 shadow-2xl border-t border-stone-200/90 h-[64vh] max-h-[480px] flex flex-col">
+    <!-- Top Handle Bar -->
+    <div class="w-12 h-1 bg-stone-300 rounded-full mx-auto shrink-0 mb-3"></div>
     
-    <div class="flex items-center justify-between shrink-0 mb-3">
-      <h3 class="text-sm font-extrabold text-slate-900">Adjust Photo</h3>
-      <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-700 text-base">✕</button>
+    <!-- Header Bar with Compare & Reset All -->
+    <div class="flex items-center justify-between shrink-0 pb-3 border-b border-stone-200/80">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-red-600"></span>
+        <h3 class="text-sm font-black text-slate-900 tracking-tight uppercase">Adjust</h3>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Before/After Compare Button -->
+        <button id="compareBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-stone-200/70 hover:bg-stone-300/80 text-slate-800 text-[11px] font-bold flex items-center gap-1.5 border border-stone-300/70 active:scale-95 transition-all select-none">
+          <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+          </svg>
+          <span id="compareBtnText">Compare</span>
+        </button>
+
+        <!-- Reset All Button -->
+        <button id="resetAdjustmentsBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-[11px] font-bold border border-red-200/60 active:scale-95 transition-all">
+          Reset All
+        </button>
+
+        <!-- Close 'X' Button -->
+        <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-800 text-base leading-none">✕</button>
+      </div>
     </div>
 
     <!-- Scrollable Sliders List -->
-    <div class="flex-1 overflow-y-auto pr-1 space-y-4 text-xs pb-16">
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Exposure</span>
-          <span id="exposureVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="exposureSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+    <div class="flex-1 overflow-y-auto px-1 py-3 space-y-4 text-xs">
+
+      <!-- SECTION 1: LIGHT -->
+      <div class="space-y-3.5">
+        <div class="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-400 uppercase pt-1">
+          <span>Light</span>
+          <div class="flex-1 h-px bg-stone-200"></div>
+        </div>
+
+        <!-- 1. Exposure -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Exposure</span>
+              <button type="button" data-reset="exposure" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Exposure">↺</button>
+            </div>
+            <span id="exposureVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="exposureSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
+
+        <!-- 2. Contrast -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Contrast</span>
+              <button type="button" data-reset="contrast" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Contrast">↺</button>
+            </div>
+            <span id="contrastVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="contrastSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
+
+        <!-- 3. Highlights -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Highlights</span>
+              <button type="button" data-reset="highlights" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Highlights">↺</button>
+            </div>
+            <span id="highlightsVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="highlightsSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
+
+        <!-- 4. Shadows -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Shadows</span>
+              <button type="button" data-reset="shadows" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Shadows">↺</button>
+            </div>
+            <span id="shadowsVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="shadowsSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
+
+        <!-- 5. Whites -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Whites</span>
+              <button type="button" data-reset="whites" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Whites">↺</button>
+            </div>
+            <span id="whitesVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="whitesSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
+
+        <!-- 6. Blacks -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Blacks</span>
+              <button type="button" data-reset="blacks" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Blacks">↺</button>
+            </div>
+            <span id="blacksVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="blacksSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
       </div>
 
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Contrast</span>
-          <span id="contrastVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="contrastSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
+      <!-- SECTION 2: COLOR -->
+      <div class="space-y-3.5 pt-2">
+        <div class="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+          <span>Color</span>
+          <div class="flex-1 h-px bg-stone-200"></div>
+        </div>
 
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Highlights</span>
-          <span id="highlightsVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="highlightsSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
+        <!-- 1. Temperature -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Temperature</span>
+              <button type="button" data-reset="temperature" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Temperature">↺</button>
+            </div>
+            <span id="temperatureVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="temperatureSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
 
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Shadows</span>
-          <span id="shadowsVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="shadowsSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
+        <!-- 2. Tint -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Tint</span>
+              <button type="button" data-reset="tint" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Tint">↺</button>
+            </div>
+            <span id="tintVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="tintSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
 
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Whites</span>
-          <span id="whitesVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="whitesSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
+        <!-- 3. Vibrance -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Vibrance</span>
+              <button type="button" data-reset="vibrance" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Vibrance">↺</button>
+            </div>
+            <span id="vibranceVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="vibranceSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
 
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Blacks</span>
-          <span id="blacksVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="blacksSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+        <!-- 4. Saturation -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+              <span>Saturation</span>
+              <button type="button" data-reset="saturation" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Saturation">↺</button>
+            </div>
+            <span id="saturationVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+          </div>
+          <input type="range" id="saturationSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
+        </div>
       </div>
+    </div>
 
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Temperature</span>
-          <span id="temperatureVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="temperatureSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
-
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Tint</span>
-          <span id="tintVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="tintSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
-
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Vibrance</span>
-          <span id="vibranceVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="vibranceSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
-
-      <div>
-        <label class="flex justify-between font-bold text-slate-700 mb-1">
-          <span>Saturation</span>
-          <span id="saturationVal" class="text-red-600 font-mono">0</span>
-        </label>
-        <input type="range" id="saturationSlider" min="-100" max="100" step="1" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
-      </div>
+    <!-- Sticky Bottom Done Bar -->
+    <div class="shrink-0 pt-3 border-t border-stone-200/80 flex items-center gap-2">
+      <button id="adjustDoneBtn" type="button" class="w-full py-3.5 rounded-2xl btn-red-primary text-white font-extrabold text-xs uppercase tracking-wider shadow-md active:scale-95 transition-all">
+        Done
+      </button>
     </div>
   </div>
 
@@ -301,7 +402,7 @@
 
       <div>
         <label class="block text-xs font-bold text-slate-700 mb-1.5">Student Centre</label>
-        <input type="text" id="settingsCentreInput" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-bold text-sm focus:border-red-500 focus:outline-none" />
+        <input type="text" id="settingsCentreInput" placeholder="Unit Committee, Students Centre," class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-bold text-sm focus:border-red-500 focus:outline-none" />
       </div>
 
       <!-- Footer Adjustments -->
@@ -369,7 +470,7 @@
 
       <div class="space-y-2 relative">
         <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-red-700 to-red-500 p-0.5 shadow-lg shadow-red-600/30 flex items-center justify-center">
-          <div class="w-full h-full bg-red-600 rounded-2xl flex items-center justify-center font-black text-white text-2xl">
+          <div class="w-full h-full bg-red-600 rounded-2xl flex items-center justify-center font-black text-white text-2xl" style="font-family:'CooperBlack','Cooper Black',fantasy;">
             SSF
           </div>
         </div>
@@ -385,7 +486,7 @@
 
         <div>
           <label class="block text-xs font-extrabold text-slate-800 mb-1.5">Student Centre</label>
-          <input type="text" id="setupCentreInput" placeholder="Enter student centre name" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-bold text-sm focus:border-red-500 focus:outline-none transition-all" />
+          <input type="text" id="setupCentreInput" value="Unit Committee, Students Centre," placeholder="Unit Committee, Students Centre," class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-bold text-sm focus:border-red-500 focus:outline-none transition-all" />
         </div>
 
         <button type="submit" class="w-full py-4 rounded-full btn-red-primary text-white font-extrabold text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-2">
