@@ -190,22 +190,22 @@
     </div>
   </div>
 
-  <!-- SLIDE-UP BOTTOM SHEET: PROFESSIONAL ACR ADJUST PHOTO MODAL -->
-  <div id="adjustSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-[#FAF8F5] rounded-t-3xl p-5 shadow-2xl border-t border-stone-200/90 h-[64vh] max-h-[480px] flex flex-col">
+  <!-- SLIDE-UP BOTTOM SHEET: COMPACT PROFESSIONAL ACR ADJUST PHOTO MODAL (20-25% height, no frame overlap) -->
+  <div id="adjustSheet" class="bottom-sheet fixed inset-x-0 bottom-0 z-50 transform translate-y-full max-w-md mx-auto bg-[#FAF8F5] rounded-t-3xl px-4 pt-2.5 pb-2 shadow-2xl border-t border-stone-200/90 h-[26vh] max-h-[210px] min-h-[175px] flex flex-col">
     <!-- Top Handle Bar -->
-    <div class="w-12 h-1 bg-stone-300 rounded-full mx-auto shrink-0 mb-3"></div>
+    <div class="w-10 h-1 bg-stone-300 rounded-full mx-auto shrink-0 mb-1.5"></div>
     
-    <!-- Header Bar with Compare & Reset All -->
-    <div class="flex items-center justify-between shrink-0 pb-3 border-b border-stone-200/80">
-      <div class="flex items-center gap-2">
+    <!-- Compact Header Bar with Compare, Reset, Done -->
+    <div class="flex items-center justify-between shrink-0 pb-1.5 border-b border-stone-200/80">
+      <div class="flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-red-600"></span>
-        <h3 class="text-sm font-black text-slate-900 tracking-tight uppercase">Adjust</h3>
+        <h3 class="text-xs font-black text-slate-900 tracking-tight uppercase">Adjust</h3>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5">
         <!-- Before/After Compare Button -->
-        <button id="compareBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-stone-200/70 hover:bg-stone-300/80 text-slate-800 text-[11px] font-bold flex items-center gap-1.5 border border-stone-300/70 active:scale-95 transition-all select-none">
-          <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="compareBtn" type="button" class="px-2 py-1 rounded-lg bg-stone-200/80 hover:bg-stone-300 text-slate-800 text-[10px] font-bold flex items-center gap-1 border border-stone-300/70 active:scale-95 transition-all select-none">
+          <svg class="w-3 h-3 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           </svg>
@@ -213,160 +213,158 @@
         </button>
 
         <!-- Reset All Button -->
-        <button id="resetAdjustmentsBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-[11px] font-bold border border-red-200/60 active:scale-95 transition-all">
-          Reset All
+        <button id="resetAdjustmentsBtn" type="button" class="px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold border border-red-200/60 active:scale-95 transition-all">
+          Reset
+        </button>
+
+        <!-- Done Button in Header -->
+        <button id="adjustDoneBtn" type="button" class="px-2.5 py-1 rounded-lg btn-red-primary text-white text-[10px] font-extrabold uppercase tracking-wider active:scale-95 transition-all shadow-xs">
+          Done ✓
         </button>
 
         <!-- Close 'X' Button -->
-        <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-800 text-base leading-none">✕</button>
+        <button class="close-sheet-btn p-1 text-slate-400 hover:text-slate-800 text-sm leading-none ml-0.5">✕</button>
       </div>
     </div>
 
-    <!-- Scrollable Sliders List -->
-    <div class="flex-1 overflow-y-auto px-1 py-3 space-y-4 text-xs">
+    <!-- Scrollable Sliders List (Ultra-compact vertical spacing) -->
+    <div class="flex-1 overflow-y-auto px-1 py-1 space-y-2.5 text-xs">
 
       <!-- SECTION 1: LIGHT -->
-      <div class="space-y-3.5">
-        <div class="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-400 uppercase pt-1">
+      <div class="space-y-2">
+        <div class="flex items-center gap-1.5 text-[9px] font-black tracking-widest text-slate-400 uppercase pt-0.5">
           <span>Light</span>
           <div class="flex-1 h-px bg-stone-200"></div>
         </div>
 
         <!-- 1. Exposure -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Exposure</span>
-              <button type="button" data-reset="exposure" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Exposure">↺</button>
+              <button type="button" data-reset="exposure" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Exposure">↺</button>
             </div>
-            <span id="exposureVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="exposureVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="exposureSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 2. Contrast -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Contrast</span>
-              <button type="button" data-reset="contrast" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Contrast">↺</button>
+              <button type="button" data-reset="contrast" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Contrast">↺</button>
             </div>
-            <span id="contrastVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="contrastVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="contrastSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 3. Highlights -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Highlights</span>
-              <button type="button" data-reset="highlights" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Highlights">↺</button>
+              <button type="button" data-reset="highlights" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Highlights">↺</button>
             </div>
-            <span id="highlightsVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="highlightsVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="highlightsSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 4. Shadows -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Shadows</span>
-              <button type="button" data-reset="shadows" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Shadows">↺</button>
+              <button type="button" data-reset="shadows" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Shadows">↺</button>
             </div>
-            <span id="shadowsVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="shadowsVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="shadowsSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 5. Whites -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Whites</span>
-              <button type="button" data-reset="whites" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Whites">↺</button>
+              <button type="button" data-reset="whites" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Whites">↺</button>
             </div>
-            <span id="whitesVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="whitesVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="whitesSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 6. Blacks -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Blacks</span>
-              <button type="button" data-reset="blacks" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Blacks">↺</button>
+              <button type="button" data-reset="blacks" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Blacks">↺</button>
             </div>
-            <span id="blacksVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="blacksVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="blacksSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
       </div>
 
       <!-- SECTION 2: COLOR -->
-      <div class="space-y-3.5 pt-2">
-        <div class="flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+      <div class="space-y-2 pt-1">
+        <div class="flex items-center gap-1.5 text-[9px] font-black tracking-widest text-slate-400 uppercase">
           <span>Color</span>
           <div class="flex-1 h-px bg-stone-200"></div>
         </div>
 
         <!-- 1. Temperature -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Temperature</span>
-              <button type="button" data-reset="temperature" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Temperature">↺</button>
+              <button type="button" data-reset="temperature" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Temperature">↺</button>
             </div>
-            <span id="temperatureVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="temperatureVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="temperatureSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 2. Tint -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Tint</span>
-              <button type="button" data-reset="tint" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Tint">↺</button>
+              <button type="button" data-reset="tint" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Tint">↺</button>
             </div>
-            <span id="tintVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="tintVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="tintSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 3. Vibrance -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Vibrance</span>
-              <button type="button" data-reset="vibrance" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Vibrance">↺</button>
+              <button type="button" data-reset="vibrance" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Vibrance">↺</button>
             </div>
-            <span id="vibranceVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="vibranceVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="vibranceSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
 
         <!-- 4. Saturation -->
-        <div class="space-y-1">
+        <div class="space-y-0.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 font-bold text-slate-800">
+            <div class="flex items-center gap-1 font-bold text-slate-800 text-[11px]">
               <span>Saturation</span>
-              <button type="button" data-reset="saturation" class="slider-reset-btn text-[11px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Saturation">↺</button>
+              <button type="button" data-reset="saturation" class="slider-reset-btn text-[10px] text-slate-400 hover:text-red-600 transition-colors opacity-0 pointer-events-none" title="Reset Saturation">↺</button>
             </div>
-            <span id="saturationVal" class="font-mono font-bold text-slate-600 text-xs w-10 text-right">0</span>
+            <span id="saturationVal" class="font-mono font-bold text-slate-600 text-[11px] w-9 text-right">0</span>
           </div>
           <input type="range" id="saturationSlider" min="-100" max="100" step="1" value="0" class="acr-slider" />
         </div>
       </div>
-    </div>
-
-    <!-- Sticky Bottom Done Bar -->
-    <div class="shrink-0 pt-3 border-t border-stone-200/80 flex items-center gap-2">
-      <button id="adjustDoneBtn" type="button" class="w-full py-3.5 rounded-2xl btn-red-primary text-white font-extrabold text-xs uppercase tracking-wider shadow-md active:scale-95 transition-all">
-        Done
-      </button>
     </div>
   </div>
 

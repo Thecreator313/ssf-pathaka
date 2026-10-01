@@ -129,7 +129,7 @@ input[type=range] {
   border-radius: 9999px;
   background: #E5E7EB;
   outline: none;
-  margin: 10px 0;
+  margin: 3px 0;
   cursor: pointer;
   touch-action: pan-y;
   position: relative;
@@ -138,12 +138,12 @@ input[type=range] {
 .acr-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #FFFFFF;
-  border: 3px solid #D91424;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  border: 2.5px solid #D91424;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
@@ -152,15 +152,16 @@ input[type=range] {
   transform: scale(1.2);
   background: #D91424;
   border-color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(217, 20, 36, 0.4);
+  box-shadow: 0 2px 6px rgba(217, 20, 36, 0.4);
 }
 
 .acr-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #FFFFFF;
-  border: 3px solid #D91424;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  border: 2.5px solid #D91424;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   cursor: pointer;
 }
+
