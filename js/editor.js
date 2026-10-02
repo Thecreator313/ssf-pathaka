@@ -103,22 +103,51 @@ export class CanvasEditor {
   }
 
   /**
-   * Load Default Official SSF Frame PNG (from public /assets/)
+   * Load Default Official SSF Frame PNG (with cascading fallbacks)
    */
   loadDefaultFrame() {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      this.frameImage = img;
-      this.isFrameLoaded = true;
-      this.render();
+    const candidateSources = [
+      '/assets/frame.png',
+      '/frame.png',
+      './assets/frame.png',
+      './frame.png',
+      'assets/frame.png',
+      'frame.png'
+    ];
+
+    let index = 0;
+
+    const tryNext = () => {
+      if (index >= candidateSources.length) {
+        console.warn('Could not load frame PNG from candidate paths');
+        this.isFrameLoaded = false;
+        this.render();
+        return;
+      }
+
+      const src = candidateSources[index];
+      const img = new Image();
+
+      // Only set crossOrigin for external http(s) domains to prevent CORS blocking on same-origin
+      if (src.startsWith('http://') || src.startsWith('https://')) {
+        img.crossOrigin = 'anonymous';
+      }
+
+      img.onload = () => {
+        this.frameImage = img;
+        this.isFrameLoaded = true;
+        this.render();
+      };
+
+      img.onerror = () => {
+        index++;
+        tryNext();
+      };
+
+      img.src = src;
     };
-    img.onerror = () => {
-      console.warn('Could not load /assets/frame.png, falling back to backup renderer');
-      this.isFrameLoaded = false;
-      this.render();
-    };
-    img.src = '/assets/frame.png';
+
+    tryNext();
   }
 
   /**

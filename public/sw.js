@@ -1,14 +1,15 @@
 /**
- * SSF Photo Frame - Service Worker for Offline PWA
+ * SSF Photo Frame - Service Worker for Offline PWA (v2)
  */
 
-const CACHE_NAME = 'ssf-photo-frame-v1';
+const CACHE_NAME = 'ssf-photo-frame-v2';
 
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.png',
+  '/frame.png',
   '/assets/frame.png',
   '/assets/fonts/COOPBL.TTF',
   '/assets/fonts/Sora-VariableFont_wght.ttf',
@@ -17,19 +18,23 @@ const STATIC_ASSETS = [
   '/assets/icons/apple-touch-icon.png'
 ];
 
-// Install Event - Pre-cache core shell & assets
+// Install Event - Pre-cache core shell & assets safely
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('PWA pre-cache warning:', err);
-      });
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of STATIC_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn('PWA asset cache notice for:', asset, err);
+        }
+      }
     })
   );
 });
 
-// Activate Event - Clean old caches and claim clients
+// Activate Event - Clean old caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -47,9 +52,8 @@ self.addEventListener('activate', (event) => {
 // Fetch Event - Stale-While-Revalidate & Cache-First
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  const url = new URL(req.url);
 
-  // Only handle GET requests from the same origin or CDN assets
+  // Only handle GET requests
   if (req.method !== 'GET') return;
 
   // For navigation (HTML), try network first, fallback to cached /index.html
@@ -74,11 +78,14 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        // Return cached if network fails
         return cachedResponse;
       });
 
-      return cachedResponse || fetchPromise;
+      // Return valid cached response if available, otherwise fetch
+      if (cachedResponse && cachedResponse.ok) {
+        return cachedResponse;
+      }
+      return fetchPromise;
     })
   );
 });
