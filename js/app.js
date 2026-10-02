@@ -314,26 +314,93 @@ document.addEventListener('DOMContentLoaded', () => {
     editor.setAdjustments(adj, isInteractive);
   }
 
-  // Bind live slider events
+  // Calculate thumb center position on slider track
+  function getSliderThumbX(slider) {
+    const rect = slider.getBoundingClientRect();
+    const min = parseFloat(slider.min) || -100;
+    const max = parseFloat(slider.max) || 100;
+    const val = parseFloat(slider.value) || 0;
+    const ratio = Math.max(0, Math.min(1, (val - min) / (max - min)));
+    const thumbWidth = 18;
+    return rect.left + (thumbWidth / 2) + ratio * (rect.width - thumbWidth);
+  }
+
+  // Bind live slider events with touch-guard (only adjust when pressing & dragging circle dot)
   sliderIds.forEach(id => {
     const slider = sliders[id];
-    if (slider) {
-      // Real-time responsive slider dragging
-      slider.addEventListener('input', () => {
-        updateAdjustmentsFromSliders(true);
-      });
+    if (!slider) return;
 
-      // High-quality pass on slider release
-      slider.addEventListener('change', () => {
-        updateAdjustmentsFromSliders(false);
-      });
+    let isThumbActive = false;
+    let startVal = parseFloat(slider.value) || 0;
+    let startX = 0;
+    let startY = 0;
 
-      // Double-click to reset single slider
-      slider.addEventListener('dblclick', () => {
-        slider.value = 0;
+    // Detect touch specifically on circle dot (thumb)
+    slider.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) {
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        startVal = parseFloat(slider.value) || 0;
+
+        const thumbX = getSliderThumbX(slider);
+        const dist = Math.abs(touch.clientX - thumbX);
+
+        // Generous 28px radius target for thumb (56px touch zone)
+        if (dist <= 28) {
+          isThumbActive = true;
+        } else {
+          // Touched track outside thumb: do not activate slider, treat as scroll gesture
+          isThumbActive = false;
+        }
+      }
+    }, { passive: true });
+
+    slider.addEventListener('touchmove', (e) => {
+      if (isThumbActive && e.touches && e.touches[0]) {
+        const touch = e.touches[0];
+        const deltaX = Math.abs(touch.clientX - startX);
+        const deltaY = Math.abs(touch.clientY - startY);
+
+        // If user starts scrolling vertically, cancel slider drag immediately and restore value
+        if (deltaY > deltaX && deltaY > 8) {
+          isThumbActive = false;
+          slider.value = startVal;
+          formatValueDisplay(id, startVal);
+          updateAdjustmentsFromSliders(false);
+        }
+      }
+    }, { passive: true });
+
+    const handleTouchEnd = () => {
+      if (isThumbActive) {
+        isThumbActive = false;
         updateAdjustmentsFromSliders(false);
-      });
-    }
+      }
+    };
+    slider.addEventListener('touchend', handleTouchEnd, { passive: true });
+    slider.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    // Live input event
+    slider.addEventListener('input', () => {
+      // If on touch device and thumb wasn't specifically grabbed, revert accidental jump
+      if (window.matchMedia('(pointer: coarse)').matches && !isThumbActive) {
+        slider.value = startVal;
+        return;
+      }
+      updateAdjustmentsFromSliders(true);
+    });
+
+    // High-quality pass on slider release
+    slider.addEventListener('change', () => {
+      updateAdjustmentsFromSliders(false);
+    });
+
+    // Double-click to reset single slider
+    slider.addEventListener('dblclick', () => {
+      slider.value = 0;
+      updateAdjustmentsFromSliders(false);
+    });
   });
 
   // Individual slider reset buttons

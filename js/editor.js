@@ -68,7 +68,7 @@ export class CanvasEditor {
 
     // Unit configuration details
     this.config = {
-      unitName: 'Malappuram East',
+      unitName: '',
       studentCentre: 'Unit Committee, Students Centre,',
       frameStyle: 'official'
     };
@@ -402,7 +402,7 @@ export class CanvasEditor {
     targetCtx.textBaseline = 'alphabetic';
 
     // Text Values
-    const unitText = (this.config.unitName || 'Malappuram East').trim();
+    const unitText = (this.config.unitName || '').trim();
     const centreText = (this.config.studentCentre || 'Unit Committee, Students Centre,').trim();
 
     // Font Sizes (Scalable HD resolution base)
@@ -418,19 +418,22 @@ export class CanvasEditor {
 
     let currentX = 0;
     if (align === 'left') {
-      targetCtx.fillText('SSF ', currentX, 0);
-      const ssfMetrics = targetCtx.measureText('SSF ');
+      const ssfPrefix = unitText ? 'SSF ' : 'SSF';
+      targetCtx.fillText(ssfPrefix, currentX, 0);
+      const ssfMetrics = targetCtx.measureText(ssfPrefix);
       currentX += ssfMetrics.width;
 
-      targetCtx.font = `600 ${unitFontSize}px 'Sora', 'Noto Sans Malayalam', sans-serif`;
-      targetCtx.fillStyle = fontColor;
-      targetCtx.fillText(unitText, currentX, 0);
+      if (unitText) {
+        targetCtx.font = `600 ${unitFontSize}px 'Sora', 'Noto Sans Malayalam', sans-serif`;
+        targetCtx.fillStyle = fontColor;
+        targetCtx.fillText(unitText, currentX, 0);
+      }
 
     } else {
       // Centered or Right
       targetCtx.font = `600 ${unitFontSize}px 'Sora', 'Noto Sans Malayalam', sans-serif`;
       targetCtx.fillStyle = fontColor;
-      targetCtx.fillText(`SSF ${unitText}`, 0, 0);
+      targetCtx.fillText(unitText ? `SSF ${unitText}` : 'SSF', 0, 0);
     }
 
     // LINE 2: Student Centre Name (Sora Light)
