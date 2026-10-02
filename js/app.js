@@ -10,6 +10,7 @@ import { Storage } from './storage.js';
 import { FILTER_PRESETS } from './filters.js';
 import { CanvasEditor } from './editor.js';
 import { Exporter } from './export.js';
+import { registerUnit, trackPosterCreated } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
@@ -127,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     showSetupModal();
   } else {
     hideSetupModal();
+    if (config.unitName) {
+      registerUnit(config.unitName, config.studentCentre);
+    }
   }
 
   function showSetupModal() {
@@ -154,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Storage.saveConfig(unit, centre || 'Unit Committee, Students Centre,', editor.footerState);
     config = Storage.getConfig();
     editor.setConfig(config);
+    registerUnit(unit, centre || 'Unit Committee, Students Centre,');
     hideSetupModal();
     showToast('✨ Unit setup saved!');
   });
@@ -221,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Storage.saveConfig(unit, centre, editor.footerState);
     config = Storage.getConfig();
     editor.setConfig(config);
+    registerUnit(unit, centre);
 
     closeAllSheets();
     showToast('✅ Settings & Footer position saved!');
@@ -561,6 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Exporting HD PNG Image...');
     const hdCanvas = editor.exportHDCanvas(1.0);
     Exporter.downloadHD(hdCanvas, config.unitName);
+    trackPosterCreated(config.unitName, config.studentCentre, 'download');
     showToast('✅ Download Started!');
   }
 
@@ -569,6 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hdCanvas = editor.exportHDCanvas(1.0);
     const result = await Exporter.shareToWhatsApp(hdCanvas, config);
     if (result && result.success) {
+      trackPosterCreated(config.unitName, config.studentCentre, 'whatsapp');
       showToast('🚀 Ready to share on WhatsApp!');
     }
   }
