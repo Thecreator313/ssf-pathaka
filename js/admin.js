@@ -179,13 +179,34 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  // Status Banner
-  const dbStatusBanner = document.getElementById('dbStatusBanner');
+  // ADMIN AUTHENTICATION GUARD
+  const loginOverlay = document.getElementById('loginOverlay');
+  const loginForm = document.getElementById('loginForm');
+  const loginUserId = document.getElementById('loginUserId');
+  const loginPassword = document.getElementById('loginPassword');
+  const loginError = document.getElementById('loginError');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-  // Subscribe to real-time updates
-  let unsubscribe = null;
+  const ADMIN_USER_ID = 'ssfmlpeast';
+  const ADMIN_PASSWORD = 'ssf123east';
+  const AUTH_KEY = 'ssf_admin_auth_token';
+
+  function isAuthenticated() {
+    return sessionStorage.getItem(AUTH_KEY) === 'true' || localStorage.getItem(AUTH_KEY) === 'true';
+  }
+
+  function setAuthenticated(status) {
+    if (status) {
+      sessionStorage.setItem(AUTH_KEY, 'true');
+      localStorage.setItem(AUTH_KEY, 'true');
+    } else {
+      sessionStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(AUTH_KEY);
+    }
+  }
 
   function initSubscription() {
+    if (unsubscribe) return; // Prevent duplicate subscriptions
     if (loadingState) loadingState.classList.remove('hidden');
 
     unsubscribe = subscribeToAdminData((data) => {
@@ -245,7 +266,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  initSubscription();
+  function checkAuthAndInit() {
+    if (isAuthenticated()) {
+      if (loginOverlay) loginOverlay.classList.add('hidden');
+      initSubscription();
+    } else {
+      if (loginOverlay) loginOverlay.classList.remove('hidden');
+    }
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const enteredId = (loginUserId.value || '').trim();
+      const enteredPass = (loginPassword.value || '').trim();
+
+      if (enteredId === ADMIN_USER_ID && enteredPass === ADMIN_PASSWORD) {
+        if (loginError) loginError.classList.add('hidden');
+        setAuthenticated(true);
+        if (loginOverlay) loginOverlay.classList.add('hidden');
+        initSubscription();
+      } else {
+        if (loginError) {
+          loginError.textContent = '❌ Invalid User ID or Password';
+          loginError.classList.remove('hidden');
+        }
+      }
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      setAuthenticated(false);
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+      if (loginUserId) loginUserId.value = '';
+      if (loginPassword) loginPassword.value = '';
+      if (loginError) loginError.classList.add('hidden');
+      if (loginOverlay) loginOverlay.classList.remove('hidden');
+    });
+  }
+
+  checkAuthAndInit();
 
   // Search input event
   if (searchInput) {
@@ -266,7 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Refresh button
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => {
-      if (unsubscribe) unsubscribe();
+      if (!isAuthenticated()) return;
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
       initSubscription();
     });
   }
