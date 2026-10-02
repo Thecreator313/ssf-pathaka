@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let allUnits = [];
   let currentFilter = '';
   let currentSort = 'posters_desc';
+  let unsubscribe = null;
 
   function formatTimeAgo(isoString) {
     if (!isoString) return '—';
