@@ -75,7 +75,7 @@
           <span class="hidden md:inline">Refresh</span>
         </button>
 
-        <a href="/" class="px-3.5 py-2 rounded-xl btn-red-primary text-white text-xs font-extrabold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm">
+        <a href="./index.html" class="px-3.5 py-2 rounded-xl btn-red-primary text-white text-xs font-extrabold flex items-center gap-1.5 transition-all active:scale-95 shadow-sm">
           <span>Open Studio</span>
           <span>→</span>
         </a>
@@ -86,6 +86,9 @@
 
   <!-- MAIN DASHBOARD CONTENT -->
   <main class="flex-1 max-w-6xl w-full mx-auto p-4 lg:p-8 space-y-6">
+
+    <!-- DB STATUS BANNER (Dynamic for Firebase Connection State) -->
+    <div id="dbStatusBanner" class="hidden"></div>
 
     <!-- KPI CARDS GRID -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

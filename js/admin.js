@@ -179,6 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
+  // Status Banner
+  const dbStatusBanner = document.getElementById('dbStatusBanner');
+
   // Subscribe to real-time updates
   let unsubscribe = null;
 
@@ -199,20 +202,46 @@ document.addEventListener('DOMContentLoaded', () => {
       if (totalDownloadsEl) totalDownloadsEl.textContent = Number(downloads).toLocaleString();
       if (totalWhatsAppEl) totalWhatsAppEl.textContent = Number(whatsapp).toLocaleString();
 
+      if (dbStatusBanner) {
+        if (data.isLocalFallback) {
+          dbStatusBanner.className = 'block p-4 rounded-2xl bg-amber-50 border border-amber-200/90 text-amber-900 text-xs shadow-xs';
+          dbStatusBanner.innerHTML = `
+            <div class="flex items-start gap-3">
+              <span class="text-xl">⚠️</span>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <h4 class="font-extrabold text-amber-950 text-xs uppercase tracking-wider">Firebase Realtime Database Inactive / Offline</h4>
+                  <span class="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 text-[10px] font-bold">Showing Local Device Data</span>
+                </div>
+                <p class="text-amber-800 text-[11px] leading-relaxed">
+                  Firebase error: <em>${data.errorMsg || 'Database deactivated'}</em>.
+                  Showing registered units and posters saved on this browser.
+                </p>
+                <div class="pt-1 text-[11px] text-amber-900 bg-amber-100/70 p-2.5 rounded-xl border border-amber-200/60 font-medium">
+                  <strong>To enable global live cloud sync across all users:</strong><br/>
+                  1. Go to <a href="https://console.firebase.google.com/project/asdf-1f4f7/database" target="_blank" class="underline font-bold text-amber-950">Firebase Console (asdf-1f4f7)</a><br/>
+                  2. Select <strong>Realtime Database</strong> & click <strong>Enable / Activate Database</strong><br/>
+                  3. In <strong>Rules</strong> tab, set: <code class="font-mono text-[10px] bg-white/80 px-1 py-0.5 rounded text-slate-800">{ ".read": true, ".write": true }</code>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          dbStatusBanner.className = 'block p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs shadow-xs';
+          dbStatusBanner.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="font-bold">Live Cloud Sync Connected:</span>
+              <span class="text-emerald-700">Real-time updates active from Firebase Database.</span>
+            </div>
+          `;
+        }
+      }
+
       renderUnits();
     }, (error) => {
-      console.error('Firebase Subscription Error:', error);
-      if (loadingState) {
-        loadingState.innerHTML = `
-          <div class="text-red-500 font-bold text-xs space-y-2">
-            <div>⚠️ Could not connect to Firebase Database.</div>
-            <div class="font-normal text-slate-500">Check connection or Realtime Database rules.</div>
-            <button id="retryBtn" class="px-3 py-1.5 rounded-xl bg-red-600 text-white font-bold text-xs">Retry</button>
-          </div>
-        `;
-        const retryBtn = document.getElementById('retryBtn');
-        if (retryBtn) retryBtn.addEventListener('click', initSubscription);
-      }
+      console.warn('Firebase Subscription Notice:', error);
+      if (loadingState) loadingState.classList.add('hidden');
     });
   }
 

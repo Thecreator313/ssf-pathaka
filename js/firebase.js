@@ -38,6 +38,71 @@ try {
   console.warn('Firebase initialization error:', err);
 }
 
+const LOCAL_STORAGE_KEY = 'ssf_firebase_local_units';
+
+function getLocalRegistry() {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : { stats: { totalPosters: 0, totalUnits: 0, downloads: 0, whatsappShares: 0 }, units: {} };
+  } catch {
+    return { stats: { totalPosters: 0, totalUnits: 0, downloads: 0, whatsappShares: 0 }, units: {} };
+  }
+}
+
+function saveToLocalRegistry(key, unitName, studentCentre) {
+  try {
+    const data = getLocalRegistry();
+    const now = new Date().toISOString();
+    if (!data.units[key]) {
+      data.units[key] = {
+        unitName,
+        studentCentre,
+        postersCount: 0,
+        registeredAt: now,
+        lastActive: now
+      };
+    } else {
+      data.units[key].unitName = unitName;
+      data.units[key].studentCentre = studentCentre;
+      data.units[key].lastActive = now;
+    }
+    data.stats.totalUnits = Object.keys(data.units).length;
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Local registry error:', e);
+  }
+}
+
+function trackLocalPoster(key, unitName, studentCentre, actionType) {
+  try {
+    const data = getLocalRegistry();
+    const now = new Date().toISOString();
+    data.stats.totalPosters = (data.stats.totalPosters || 0) + 1;
+    if (actionType === 'whatsapp') {
+      data.stats.whatsappShares = (data.stats.whatsappShares || 0) + 1;
+    } else {
+      data.stats.downloads = (data.stats.downloads || 0) + 1;
+    }
+
+    if (!data.units[key]) {
+      data.units[key] = {
+        unitName: unitName || 'General',
+        studentCentre: studentCentre || '',
+        postersCount: 1,
+        registeredAt: now,
+        lastActive: now
+      };
+    } else {
+      data.units[key].postersCount = (data.units[key].postersCount || 0) + 1;
+      data.units[key].lastActive = now;
+    }
+    data.stats.totalUnits = Object.keys(data.units).length;
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Local track error:', e);
+  }
+}
+
 /**
  * Sanitizes unit name to be used safely as a Firebase Realtime Database key.
  * Supports Malayalam, Arabic, English, and special characters.
@@ -50,13 +115,23 @@ export function sanitizeUnitKey(unitName) {
 }
 
 /**
- * Register or update unit details in Firebase Realtime Database
+ * Register or update unit details in Firebase Realtime Database + Local Fallback
  */
 export async function registerUnit(unitName, studentCentre) {
-  if (!db || !unitName || !unitName.trim()) return;
+  if (!unitName || !unitName.trim()) return;
 
-  const key = sanitizeUnitKey(unitName);
+  const cleanUnit = unitName.trim();
+  const cleanCentre = (studentCentre || '').trim();
+  const key = sanitizeUnitKey(cleanUnit);
   const now = new Date().toISOString();
+
+  // Always save to local registry fallback
+  saveToLocalRegistry(key, cleanUnit, cleanCentre);
+
+  if (!db) {
+    console.warn('Firebase database instance not initialized');
+    return;
+  }
 
   try {
     const unitRef = ref(db, `units/${key}`);
@@ -65,8 +140,8 @@ export async function registerUnit(unitName, studentCentre) {
     if (!snapshot.exists()) {
       // New unit registration
       await set(unitRef, {
-        unitName: unitName.trim(),
-        studentCentre: (studentCentre || '').trim(),
+        unitName: cleanUnit,
+        studentCentre: cleanCentre,
         postersCount: 0,
         registeredAt: now,
         lastActive: now
@@ -79,13 +154,13 @@ export async function registerUnit(unitName, studentCentre) {
     } else {
       // Existing unit update details
       await update(unitRef, {
-        unitName: unitName.trim(),
-        studentCentre: (studentCentre || '').trim(),
+        unitName: cleanUnit,
+        studentCentre: cleanCentre,
         lastActive: now
       });
     }
   } catch (error) {
-    console.warn('Error registering unit to Firebase:', error);
+    console.warn('Notice: Firebase unit sync failed (check if database is active):', error);
   }
 }
 
@@ -94,12 +169,15 @@ export async function registerUnit(unitName, studentCentre) {
  * Atomically increments global total posters and individual unit count
  */
 export async function trackPosterCreated(unitName, studentCentre, actionType = 'download') {
-  if (!db) return;
-
-  const key = sanitizeUnitKey(unitName || 'general');
-  const now = new Date().toISOString();
   const cleanUnitName = (unitName && unitName.trim()) ? unitName.trim() : 'General / Direct';
   const cleanCentre = (studentCentre && studentCentre.trim()) ? studentCentre.trim() : 'Unit Committee, Students Centre,';
+  const key = sanitizeUnitKey(unitName || 'general');
+  const now = new Date().toISOString();
+
+  // Always track locally
+  trackLocalPoster(key, cleanUnitName, cleanCentre, actionType);
+
+  if (!db) return;
 
   try {
     const updates = {};
@@ -121,7 +199,7 @@ export async function trackPosterCreated(unitName, studentCentre, actionType = '
 
     await update(ref(db), updates);
   } catch (error) {
-    console.warn('Error tracking poster creation in Firebase:', error);
+    console.warn('Notice: Firebase poster track sync failed:', error);
   }
 }
 
@@ -129,7 +207,26 @@ export async function trackPosterCreated(unitName, studentCentre, actionType = '
  * Subscribe to real-time Admin Statistics and all Registered Units
  */
 export function subscribeToAdminData(onDataReceived, onError) {
+  const emitLocalFallback = (isError = false, errMsg = '') => {
+    const data = getLocalRegistry();
+    const stats = data.stats || { totalPosters: 0, totalUnits: 0, downloads: 0, whatsappShares: 0 };
+    const rawUnits = data.units || {};
+    const unitsList = Object.keys(rawUnits).map(k => ({
+      id: k,
+      ...rawUnits[k]
+    })).sort((a, b) => (b.postersCount || 0) - (a.postersCount || 0));
+
+    onDataReceived({
+      stats,
+      units: unitsList,
+      totalUnitsCount: unitsList.length,
+      isLocalFallback: true,
+      errorMsg: errMsg
+    });
+  };
+
   if (!db) {
+    emitLocalFallback(true, 'Firebase Realtime Database is not initialized');
     if (onError) onError(new Error('Firebase Database not initialized'));
     return () => {};
   }
@@ -163,9 +260,12 @@ export function subscribeToAdminData(onDataReceived, onError) {
     onDataReceived({
       stats,
       units: unitsList,
-      totalUnitsCount: unitsList.length
+      totalUnitsCount: unitsList.length,
+      isLocalFallback: false
     });
   }, (err) => {
+    console.warn('Firebase Realtime Database offline or deactivated. Displaying local data.', err);
+    emitLocalFallback(true, err ? err.message : 'Database offline');
     if (onError) onError(err);
   });
 
