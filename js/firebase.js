@@ -6,7 +6,7 @@
  * 3. Individual Unit Posters Created & Last Active (units/{unitKey})
  */
 
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { 
   getDatabase, 
   ref, 
@@ -14,9 +14,8 @@ import {
   update, 
   get, 
   increment, 
-  onValue, 
-  serverTimestamp 
-} from 'firebase/database';
+  onValue 
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDqS0OmR0Tq-HyXm1XNQTK3lnDjh_vOJSg",
