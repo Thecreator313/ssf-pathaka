@@ -36,10 +36,17 @@ export const Exporter = {
    * Generate Campaign Caption Text
    */
   generateCaption(unitName, studentCentre) {
-    const unit = unitName || 'SSF Unit';
-    const centre = studentCentre || 'Student Centre';
+    const unit = unitName ? `📌 SSF ${unitName.trim()}` : '';
+    const centre = studentCentre ? `🏢 ${studentCentre.trim()}` : '';
     
-    return `അതെ, ഞാനും അംഗമായി! 💚 SSF MEMBERSHIP 2026\n\n📌 Unit: ${unit}\n🏢 Student Centre: ${centre}\n\n#SSFMembership2026 #SSFMalappuram #IMIn #SSFMappings`;
+    let text = `ജീവിതമാവുക\nഅംഗത്വകാലം\nഒക്ടോബർ 01 - 20\n\n\`മെമ്പർഷിപ് ഡേ\`\nഒക്ടോബർ 09, വെള്ളി`;
+
+    if (unit || centre) {
+      text += `\n\n${[unit, centre].filter(Boolean).join('\n')}`;
+    }
+
+    text += `\n\n#SSFMembership2026 #SSF #MembershipDay`;
+    return text;
   },
 
   /**
