@@ -18,14 +18,13 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDqS0OmR0Tq-HyXm1XNQTK3lnDjh_vOJSg",
-  authDomain: "asdf-1f4f7.firebaseapp.com",
-  databaseURL: "https://asdf-1f4f7-default-rtdb.us-central1.firebasedatabase.app",
-  projectId: "asdf-1f4f7",
-  storageBucket: "asdf-1f4f7.firebasestorage.app",
-  messagingSenderId: "79838848864",
-  appId: "1:79838848864:web:450a89b6b59063aa032005",
-  measurementId: "G-RL9XZGNKCV"
+  apiKey: "AIzaSyDtYrFQK1T27IvVlyFBuUBluzndG2eWX9U",
+  authDomain: "sffa-5c415.firebaseapp.com",
+  projectId: "sffa-5c415",
+  storageBucket: "sffa-5c415.firebasestorage.app",
+  messagingSenderId: "1075373163790",
+  appId: "1:1075373163790:web:e8c11b81db9c310d12c35f",
+  measurementId: "G-K6YV3GXX8J"
 };
 
 let app = null;

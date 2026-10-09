@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </p>
                 <div class="pt-1 text-[11px] text-amber-900 bg-amber-100/70 p-2.5 rounded-xl border border-amber-200/60 font-medium">
                   <strong>To enable global live cloud sync across all users:</strong><br/>
-                  1. Go to <a href="https://console.firebase.google.com/project/asdf-1f4f7/database" target="_blank" class="underline font-bold text-amber-950">Firebase Console (asdf-1f4f7)</a><br/>
+                  1. Go to <a href="https://console.firebase.google.com/project/sffa-5c415/database" target="_blank" class="underline font-bold text-amber-950">Firebase Console (sffa-5c415)</a><br/>
                   2. Select <strong>Realtime Database</strong> & click <strong>Enable / Activate Database</strong><br/>
                   3. In <strong>Rules</strong> tab, set: <code class="font-mono text-[10px] bg-white/80 px-1 py-0.5 rounded text-slate-800">{ ".read": true, ".write": true }</code>
                 </div>
