@@ -2,15 +2,15 @@
  * SSF Photo Frame - Service Worker for Offline PWA (v2)
  */
 
-const CACHE_NAME = 'ssf-photo-frame-v2';
+const CACHE_NAME = 'ssf-photo-frame-v4';
 
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.png',
-  '/frame.png',
-  '/assets/frame.png',
+  '/frame.png?v=3',
+  '/assets/frame.png?v=3',
   '/assets/fonts/COOPBL.TTF',
   '/assets/fonts/Sora-VariableFont_wght.ttf',
   '/assets/icons/icon-192.png',

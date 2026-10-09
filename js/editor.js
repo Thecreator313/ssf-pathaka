@@ -103,16 +103,16 @@ export class CanvasEditor {
   }
 
   /**
-   * Load Default Official SSF Frame PNG (with cascading fallbacks)
    */
   loadDefaultFrame() {
+    const versionTag = '?v=3';
     const candidateSources = [
-      '/assets/frame.png',
-      '/frame.png',
-      './assets/frame.png',
-      './frame.png',
-      'assets/frame.png',
-      'frame.png'
+      '/assets/frame.png' + versionTag,
+      '/frame.png' + versionTag,
+      './assets/frame.png' + versionTag,
+      './frame.png' + versionTag,
+      'assets/frame.png' + versionTag,
+      'frame.png' + versionTag
     ];
 
     let index = 0;
