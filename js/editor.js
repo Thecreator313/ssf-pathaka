@@ -18,9 +18,9 @@ export class CanvasEditor {
     this.canvas = canvasElement;
     this.ctx = this.canvas.getContext('2d');
 
-    // Official HD Frame Dimensions (3:4 Aspect Ratio, 1536 x 2048 HD resolution)
-    this.exportWidth = options.exportWidth || 1536;
-    this.exportHeight = options.exportHeight || 2048;
+    // Official HD Frame Dimensions (3:4 Aspect Ratio, 2400 x 3200 HD resolution)
+    this.exportWidth = options.exportWidth || 2400;
+    this.exportHeight = options.exportHeight || 3200;
 
     // Viewport scale factor
     this.viewportScale = 1;
@@ -73,12 +73,12 @@ export class CanvasEditor {
       frameStyle: 'official'
     };
 
-    // Exact Transparent Stamp Cutout Box (Relative 0 to 1)
+    // Exact Transparent Cutout Box for New Frame PNG (Relative 0 to 1)
     this.photoSlot = {
-      x: 0.1484,
-      y: 0.3545,
-      width: 0.7109,
-      height: 0.3936
+      x: 0.094583,
+      y: 0.307812,
+      width: 0.792917,
+      height: 0.336875
     };
 
     // Frame PNG image assets
@@ -435,10 +435,11 @@ export class CanvasEditor {
     const centreText = (this.config.studentCentre || 'Unit Committee, Students Centre,').trim();
 
     // Font Sizes (Scalable HD resolution base)
-    const ssfFontSize = 48;
-    const unitFontSize = 44;
-    const centreFontSize = 32;
-    const fontColor = '#111827'; // Dark Charcoal
+    const ssfFontSize = 56;
+    const unitFontSize = 52;
+    const centreFontSize = 36;
+    const fontColor = '#FFFFFF'; // Crisp White for dark bottom banner
+    const subFontColor = '#E5E7EB'; // Light Silver
 
     // LINE 1: "SSF " (Cooper Black) + Unit Name (Sora)
     const ssfFontStr = `900 ${ssfFontSize}px 'CooperBlack', 'Cooper Black', 'COOPBL', fantasy, sans-serif`;
@@ -466,9 +467,9 @@ export class CanvasEditor {
     }
 
     // LINE 2: Student Centre Name (Sora Light)
-    const line2Y = 46;
+    const line2Y = 54;
     targetCtx.font = `300 ${centreFontSize}px 'Sora', 'Noto Sans Malayalam', sans-serif`;
-    targetCtx.fillStyle = '#374151';
+    targetCtx.fillStyle = subFontColor;
     targetCtx.fillText(centreText, 0, line2Y);
 
     targetCtx.restore();
